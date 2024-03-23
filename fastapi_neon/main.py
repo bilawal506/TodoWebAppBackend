@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from sqlmodel import SQLModel, Session, create_engine, Field, select, update, delete
+from sqlmodel import SQLModel, Session, create_engine, Field, select
 from fastapi_neon import settings
 from typing import Optional, Annotated, List
 
