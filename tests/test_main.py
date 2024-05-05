@@ -16,7 +16,7 @@ def test_read_main():
     client = TestClient(app=app)
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"Hello": "World"}
+    assert response.json() == {"message":"Todo App!"}
 
 def test_write_main():
     
@@ -29,18 +29,19 @@ def test_write_main():
     SQLModel.metadata.create_all(engine)  
 
     with Session(engine) as session:  
-
         def get_session_override():  
-                return session  
+            return session  
 
         app.dependency_overrides[get_session] = get_session_override 
 
         client = TestClient(app=app)
 
-        todo_content = "buy bread"
+        todo_content = "The eigth todo"
 
         response = client.post("/todos/",
-            json={"content": todo_content}
+            json={"content": todo_content,
+                  "id":8
+                  }
         )
 
         data = response.json()
@@ -68,4 +69,52 @@ def test_read_list_main():
 
         response = client.get("/todos/")
         assert response.status_code == 200
+def test_delete_main():
     
+    connection_string = str(settings.TEST_DATABASE_URL).replace(
+    "postgresql", "postgresql+psycopg")
+
+    engine = create_engine(
+        connection_string, connect_args={"sslmode": "require"}, pool_recycle=300)
+
+    SQLModel.metadata.create_all(engine)  
+
+    with Session(engine) as session:  
+        def get_session_override():  
+            return session  
+
+        app.dependency_overrides[get_session] = get_session_override 
+
+        client = TestClient(app=app)
+
+        response = client.delete("/todos/8")
+
+        data = response.json()
+
+        assert response.status_code == 200
+        assert data["content"] == "The eigth todo"
+
+def test_update_main():
+    
+    connection_string = str(settings.TEST_DATABASE_URL).replace(
+    "postgresql", "postgresql+psycopg")
+
+    engine = create_engine(
+        connection_string, connect_args={"sslmode": "require"}, pool_recycle=300)
+
+    SQLModel.metadata.create_all(engine)  
+
+    with Session(engine) as session:  
+        def get_session_override():  
+            return session  
+
+        app.dependency_overrides[get_session] = get_session_override 
+
+        client = TestClient(app=app)
+
+        response = client.patch("/todos/9",json={"id":9,"content":"Dont buy bread (Updated content)"})
+
+        data = response.json()
+
+        assert response.status_code == 200
+        assert data["content"] == "Dont buy bread (Updated content)"
